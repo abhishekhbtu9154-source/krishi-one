@@ -11,6 +11,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Firebase SDKs for Auth & Firestore (Additive Backend Support) -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
 
     <script>
         tailwind.config = {
@@ -96,85 +100,94 @@
                     </div>
                 </div>
 
-                <!-- Language Selector & Quick Voice Trigger -->
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                    <!-- 7-Language Selector -->
-                    <div class="relative flex items-center bg-brand-950/90 border-2 border-sunshine-400/80 rounded-2xl px-2.5 py-1.5 shadow-inner">
-                        <i class="fa-solid fa-language text-sunshine-400 text-xl mr-2"></i>
-                        <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-transparent text-white text-xs sm:text-sm font-black focus:outline-none cursor-pointer pr-1">
-                            <option value="en" class="text-slate-900">English</option>
-                            <option value="hi" class="text-slate-900">हिंदी (Hindi)</option>
-                            <option value="pb" class="text-slate-900">ਪੰਜਾਬੀ (Punjabi)</option>
-                            <option value="mr" class="text-slate-900">मराठी (Marathi)</option>
-                            <option value="te" class="text-slate-900">తెలుగు (Telugu)</option>
-                            <option value="ta" class="text-slate-900">தமிழ் (Tamil)</option>
-                            <option value="bn" class="text-slate-900">বাংলা (Bengali)</option>
-                        </select>
-                    </div>
+                    <!-- Language Selector & Quick Voice Trigger -->
+                    <div class="flex items-center space-x-2 sm:space-x-3">
+                        <!-- 7-Language Selector -->
+                        <div class="relative flex items-center bg-brand-950/90 border-2 border-sunshine-400/80 rounded-2xl px-2.5 py-1.5 shadow-inner">
+                            <i class="fa-solid fa-language text-sunshine-400 text-xl mr-2"></i>
+                            <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-transparent text-white text-xs sm:text-sm font-black focus:outline-none cursor-pointer pr-1">
+                                <option value="en" class="text-slate-900">English</option>
+                                <option value="hi" class="text-slate-900">हिंदी (Hindi)</option>
+                                <option value="pb" class="text-slate-900">ਪੰਜਾਬੀ (Punjabi)</option>
+                                <option value="mr" class="text-slate-900">मराठी (Marathi)</option>
+                                <option value="te" class="text-slate-900">తెలుగు (Telugu)</option>
+                                <option value="ta" class="text-slate-900">தமிழ் (Tamil)</option>
+                                <option value="bn" class="text-slate-900">বাংলা (Bengali)</option>
+                            </select>
+                        </div>
 
-                    <!-- Voice Audio Test Button -->
-                    <button onclick="speakText(document.getElementById('headerVoiceMsg').innerText)" class="p-3 rounded-2xl bg-sunshine-400 hover:bg-sunshine-500 text-slate-950 font-black transition flex items-center justify-center shadow-md active:scale-95 touch-target" title="Audio Assistance / आवाज सुनें">
-                        <i class="fa-solid fa-volume-high text-xl"></i>
-                    </button>
-                    <span id="headerVoiceMsg" class="hidden" data-i18n="headerSpeechText">Welcome to KrishiOne platform. Choose your language or speak questions using Krishi Assistant.</span>
+                        <!-- Farmer Auth Nav Container (Login / Profile) -->
+                        <div id="navAuthContainer" class="flex items-center">
+                            <!-- Populated dynamically: Login or Profile Avatar -->
+                        </div>
+
+                        <!-- Voice Audio Test Button -->
+                        <button onclick="speakText(document.getElementById('headerVoiceMsg').innerText)" class="p-3 rounded-2xl bg-sunshine-400 hover:bg-sunshine-500 text-slate-950 font-black transition flex items-center justify-center shadow-md active:scale-95 touch-target" title="Audio Assistance / आवाज सुनें">
+                            <i class="fa-solid fa-volume-high text-xl"></i>
+                        </button>
+                        <span id="headerVoiceMsg" class="hidden" data-i18n="headerSpeechText">Welcome to KrishiOne platform. Choose your language or speak questions using Krishi Assistant.</span>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Farmer Touch Navigation Tabs -->
-        <div class="bg-brand-950 border-t border-brand-800/80 px-2 sm:px-4 py-2">
-            <div class="max-w-7xl mx-auto flex items-center justify-start sm:justify-center gap-1.5 sm:gap-3 overflow-x-auto custom-scrollbar">
-                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn flex-shrink-0 px-3.5 sm:px-5 py-2.5 rounded-xl bg-white text-brand-900 font-extrabold text-xs sm:text-sm flex items-center space-x-2 shadow transition touch-target">
-                    <i class="fa-solid fa-table-cells-large text-emerald-600 text-base"></i>
-                    <span data-i18n="navOverview">Overview</span>
-                </button>
-                <button onclick="switchTab('kvk')" id="nav-kvk" class="nav-btn flex-shrink-0 px-3.5 sm:px-5 py-2.5 rounded-xl text-emerald-100 hover:bg-white/10 font-extrabold text-xs sm:text-sm flex items-center space-x-2 transition touch-target">
-                    <i class="fa-solid fa-user-doctor text-sunshine-400 text-base"></i>
-                    <span data-i18n="navKVK">KVK Scientists & AI Doctor</span>
-                    <span class="bg-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black ml-1">Live</span>
-                </button>
-                <button onclick="switchTab('weather')" id="nav-weather" class="nav-btn flex-shrink-0 px-3.5 sm:px-5 py-2.5 rounded-xl text-emerald-100 hover:bg-white/10 font-extrabold text-xs sm:text-sm flex items-center space-x-2 transition touch-target">
-                    <i class="fa-solid fa-cloud-sun-rain text-emerald-400 text-base"></i>
-                    <span data-i18n="navWeather">Weather Advisory</span>
-                </button>
-                <button onclick="switchTab('mandi')" id="nav-mandi" class="nav-btn flex-shrink-0 px-3.5 sm:px-5 py-2.5 rounded-xl text-emerald-100 hover:bg-white/10 font-extrabold text-xs sm:text-sm flex items-center space-x-2 transition touch-target">
-                    <i class="fa-solid fa-store text-amber-300 text-base"></i>
-                    <span data-i18n="navMandi">Mandi Rates</span>
-                </button>
-                <button onclick="switchTab('schemes')" id="nav-schemes" class="nav-btn flex-shrink-0 px-3.5 sm:px-5 py-2.5 rounded-xl text-emerald-100 hover:bg-white/10 font-extrabold text-xs sm:text-sm flex items-center space-x-2 transition touch-target">
-                    <i class="fa-solid fa-hand-holding-hand text-emerald-300 text-base"></i>
-                    <span data-i18n="navSchemes">Sarkari Yojana</span>
-                </button>
-                <button onclick="switchTab('logistics')" id="nav-logistics" class="nav-btn flex-shrink-0 px-3.5 sm:px-5 py-2.5 rounded-xl text-emerald-100 hover:bg-white/10 font-extrabold text-xs sm:text-sm flex items-center space-x-2 transition touch-target">
-                    <i class="fa-solid fa-truck-pickup text-sunshine-400 text-base"></i>
-                    <span data-i18n="navLogistics">Crop Transport</span>
-                </button>
+            <!-- Farmer Touch Navigation Tabs -->
+            <div class="bg-brand-950 border-t border-brand-800/80 px-2 sm:px-4 py-2">
+                <div class="max-w-7xl mx-auto flex items-center justify-start sm:justify-center gap-1.5 sm:gap-3 overflow-x-auto custom-scrollbar">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn flex-shrink-0 px-3.5 sm:px-5 py-2.5 rounded-xl bg-white text-brand-900 font-extrabold text-xs sm:text-sm flex items-center space-x-2 shadow transition touch-target">
+                        <i class="fa-solid fa-table-cells-large text-emerald-600 text-base"></i>
+                        <span data-i18n="navOverview">Overview</span>
+                    </button>
+                    <button onclick="switchTab('kvk')" id="nav-kvk" class="nav-btn flex-shrink-0 px-3.5 sm:px-5 py-2.5 rounded-xl text-emerald-100 hover:bg-white/10 font-extrabold text-xs sm:text-sm flex items-center space-x-2 transition touch-target">
+                        <i class="fa-solid fa-user-doctor text-sunshine-400 text-base"></i>
+                        <span data-i18n="navKVK">KVK Scientists & AI Doctor</span>
+                        <span class="bg-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black ml-1">Live</span>
+                    </button>
+                    <button onclick="switchTab('weather')" id="nav-weather" class="nav-btn flex-shrink-0 px-3.5 sm:px-5 py-2.5 rounded-xl text-emerald-100 hover:bg-white/10 font-extrabold text-xs sm:text-sm flex items-center space-x-2 transition touch-target">
+                        <i class="fa-solid fa-cloud-sun-rain text-emerald-400 text-base"></i>
+                        <span data-i18n="navWeather">Weather Advisory</span>
+                    </button>
+                    <button onclick="switchTab('mandi')" id="nav-mandi" class="nav-btn flex-shrink-0 px-3.5 sm:px-5 py-2.5 rounded-xl text-emerald-100 hover:bg-white/10 font-extrabold text-xs sm:text-sm flex items-center space-x-2 transition touch-target">
+                        <i class="fa-solid fa-store text-amber-300 text-base"></i>
+                        <span data-i18n="navMandi">Mandi Rates</span>
+                    </button>
+                    <button onclick="switchTab('schemes')" id="nav-schemes" class="nav-btn flex-shrink-0 px-3.5 sm:px-5 py-2.5 rounded-xl text-emerald-100 hover:bg-white/10 font-extrabold text-xs sm:text-sm flex items-center space-x-2 transition touch-target">
+                        <i class="fa-solid fa-hand-holding-hand text-emerald-300 text-base"></i>
+                        <span data-i18n="navSchemes">Sarkari Yojana</span>
+                    </button>
+                    <button onclick="switchTab('logistics')" id="nav-logistics" class="nav-btn flex-shrink-0 px-3.5 sm:px-5 py-2.5 rounded-xl text-emerald-100 hover:bg-white/10 font-extrabold text-xs sm:text-sm flex items-center space-x-2 transition touch-target">
+                        <i class="fa-solid fa-truck-pickup text-sunshine-400 text-base"></i>
+                        <span data-i18n="navLogistics">Crop Transport</span>
+                    </button>
+                    <button onclick="switchTab('profile')" id="nav-profile" class="nav-btn flex-shrink-0 px-3.5 sm:px-5 py-2.5 rounded-xl text-emerald-100 hover:bg-white/10 font-extrabold text-xs sm:text-sm flex items-center space-x-2 transition touch-target">
+                        <i class="fa-solid fa-id-card text-emerald-300 text-base"></i>
+                        <span data-i18n="navProfile">My Farm Profile</span>
+                    </button>
+                </div>
             </div>
-        </div>
     </header>
 
     <!-- FARMER QUICK CONTEXT BAR -->
-    <div class="bg-emerald-900 text-white py-2 px-4 shadow-inner border-b border-emerald-700/50">
+    <div id="farmerContextBar" class="bg-emerald-900 text-white py-2 px-4 shadow-inner border-b border-emerald-700/50">
         <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-bold">
             <div class="flex items-center space-x-4">
-                <span class="flex items-center text-sunshine-400">
+                <span class="flex items-center text-sunshine-400 cursor-pointer" onclick="handleContextBarClick()">
                     <i class="fa-solid fa-circle-user mr-1.5 text-base"></i>
-                    <span data-i18n="farmerName">Welcome, Farmer Ramesh Singh</span>
+                    <span id="topFarmerName" data-i18n="farmerName">Welcome, Farmer Ramesh Singh</span>
                 </span>
                 <span class="hidden md:inline-flex items-center text-emerald-200">
                     <i class="fa-solid fa-location-dot mr-1 text-emerald-400"></i>
-                    <span>Village Gill, Ludhiana (Punjab)</span>
+                    <span id="topFarmerLocation">Village Gill, Ludhiana (Punjab)</span>
                 </span>
             </div>
             
             <div class="flex items-center space-x-3">
                 <span class="bg-emerald-800 text-emerald-100 px-3 py-1 rounded-full text-xs font-extrabold border border-emerald-600 flex items-center">
                     <i class="fa-solid fa-seedling mr-1.5 text-sunshine-400"></i>
-                    <span data-i18n="mainCrop">Crop: Wheat (Kalyan Sona)</span>
+                    <span id="topFarmerCrop" data-i18n="mainCrop">Crop: Wheat (Kalyan Sona)</span>
                 </span>
                 <span class="bg-brand-600 text-white px-3 py-1 rounded-full text-xs font-black shadow-sm flex items-center">
                     <i class="fa-solid fa-flask mr-1.5"></i>
-                    <span data-i18n="soilScore">Soil Health: Good (NPK 74/100)</span>
+                    <span id="topSoilScore" data-i18n="soilScore">Soil Health: Good (NPK 74/100)</span>
                 </span>
             </div>
         </div>
@@ -276,77 +289,81 @@
                 </div>
             </div>
 
-            <!-- Live Active Tickets & Soil Summary -->
-            <div class="grid md:grid-cols-2 gap-6">
-                <!-- Soil Health Card Summary -->
-                <div class="bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-sm space-y-4">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <h3 class="font-black text-slate-900 text-base flex items-center" data-i18n="soilCardTitle">
-                            <i class="fa-solid fa-flask text-brand-600 mr-2 text-xl"></i> Soil Health Card (Plot #402)
-                        </h3>
-                        <span class="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full">Updated 10 Days Ago</span>
+            <!-- Live Active Tickets & Soil Summary: Conditional Personalized Block -->
+            <div id="personalizedDashboardContainer">
+                <!-- Guest View (visible when logged out) -->
+                <div id="guestPersonalizedPrompt" class="bg-gradient-to-br from-emerald-950 via-brand-900 to-slate-900 p-6 sm:p-8 rounded-3xl border-2 border-sunshine-400/80 text-white shadow-xl flex flex-col lg:flex-row items-center justify-between gap-6">
+                    <div class="space-y-2 max-w-2xl text-center lg:text-left">
+                        <div class="inline-flex items-center space-x-2 bg-sunshine-400 text-slate-950 font-black px-3 py-1 rounded-full text-xs uppercase shadow-sm">
+                            <i class="fa-solid fa-lock"></i>
+                            <span data-i18n="personalizedBadge">Personalized Kisan Portal</span>
+                        </div>
+                        <h3 class="text-xl sm:text-2xl font-black text-white" data-i18n="personalizedPromptTitle">Login to See Your Registered Soil Health Card & KVK Tickets</h3>
+                        <p class="text-emerald-100 text-xs sm:text-sm font-medium leading-relaxed" data-i18n="personalizedPromptBody">
+                            Overview, Mandi rates, weather advisory and crop transport remain free and open. Sign in to your Kisan account to link your land plot, track personalized KVK Scientist consultation tickets, and view official PM-KISAN installment status.
+                        </p>
                     </div>
-                    
-                    <div class="grid grid-cols-3 gap-3 text-center">
-                        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200">
-                            <p class="text-[11px] font-extrabold text-slate-500 uppercase">Nitrogen (N)</p>
-                            <p class="text-lg font-black text-emerald-700 mt-1">280 kg/ha</p>
-                            <span class="text-[10px] font-bold text-emerald-600">Optimal</span>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200">
-                            <p class="text-[11px] font-extrabold text-slate-500 uppercase">Phosphorus (P)</p>
-                            <p class="text-lg font-black text-amber-600 mt-1">14 kg/ha</p>
-                            <span class="text-[10px] font-bold text-amber-600">Medium</span>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200">
-                            <p class="text-[11px] font-extrabold text-slate-500 uppercase">Potassium (K)</p>
-                            <p class="text-lg font-black text-emerald-700 mt-1">210 kg/ha</p>
-                            <span class="text-[10px] font-bold text-emerald-600">Optimal</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-brand-50 border border-brand-200 p-3.5 rounded-2xl text-xs font-extrabold text-brand-900 flex items-center justify-between">
-                        <span><i class="fa-solid fa-circle-check text-brand-600 mr-2"></i> Recommended Dosage: Apply 45kg Urea + 15kg DAP per Acre.</span>
-                        <button onclick="speakText('Recommended Dosage for your land: Apply 45 kilogram Urea and 15 kilogram DAP per acre.')" class="speaker-btn text-brand-700 p-1.5 rounded-lg hover:bg-brand-100">
-                            <i class="fa-solid fa-volume-high"></i>
+                    <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                        <button onclick="openAuthModal('login')" class="bg-sunshine-400 hover:bg-sunshine-500 text-slate-950 font-black text-xs sm:text-sm px-6 py-3.5 rounded-2xl transition shadow-lg flex items-center justify-center space-x-2 touch-target">
+                            <i class="fa-solid fa-right-to-bracket text-base"></i>
+                            <span data-i18n="btnFarmerLogin">Farmer Login</span>
+                        </button>
+                        <button onclick="openAuthModal('signup')" class="bg-white/10 hover:bg-white/20 border-2 border-white/40 text-white font-extrabold text-xs sm:text-sm px-6 py-3.5 rounded-2xl transition flex items-center justify-center space-x-2 touch-target">
+                            <i class="fa-solid fa-user-plus text-base text-sunshine-400"></i>
+                            <span data-i18n="btnCreateAccount">Create Free Account</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Recent KVK Consultation Tickets -->
-                <div class="bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-sm space-y-4">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <h3 class="font-black text-slate-900 text-base flex items-center" data-i18n="recentTicketTitle">
-                            <i class="fa-solid fa-headset text-kvk-600 mr-2 text-xl"></i> Kisan Sarathi KVK Tickets
-                        </h3>
-                        <button onclick="switchTab('kvk')" class="text-kvk-700 font-extrabold text-xs hover:underline" data-i18n="btnNewTicket">+ New Ticket</button>
-                    </div>
-
-                    <div class="space-y-3" id="dashTicketList">
-                        <!-- Ticket 1 -->
-                        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex items-center justify-between">
-                            <div>
-                                <div class="flex items-center space-x-2">
-                                    <span class="font-extrabold text-slate-900 text-xs">#KVK-8821 • Yellow Rust Wheat</span>
-                                    <span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full">Resolved</span>
-                                </div>
-                                <p class="text-xs text-slate-500 font-medium mt-0.5">Prescription: Propiconazole 25% EC Spray</p>
+                <!-- Logged In View (visible when authenticated) -->
+                <div id="loggedInPersonalizedSection" class="hidden grid md:grid-cols-2 gap-6 mt-6">
+                    <!-- Soil Health Card Summary -->
+                    <div class="bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h3 class="font-black text-slate-900 text-base flex items-center">
+                                <i class="fa-solid fa-flask text-brand-600 mr-2 text-xl"></i>
+                                <span id="dashSoilTitle" data-i18n="soilCardTitle">Soil Health Card (Plot #402)</span>
+                            </h3>
+                            <span class="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full">Updated 10 Days Ago</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-3 text-center">
+                            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                                <p class="text-[11px] font-extrabold text-slate-500 uppercase">Nitrogen (N)</p>
+                                <p class="text-lg font-black text-emerald-700 mt-1" id="dashNitrogen">280 kg/ha</p>
+                                <span class="text-[10px] font-bold text-emerald-600">Optimal</span>
                             </div>
-                            <button onclick="openPrescriptionModal('Wheat Yellow Rust', 'Dr. S. K. Sharma (KVK Ludhiana)', 'Spray Propiconazole 25% EC @ 1 ml/litre water during clear sky.')" class="bg-kvk-100 text-kvk-800 font-extrabold text-xs px-3 py-1.5 rounded-xl hover:bg-kvk-200 transition">
-                                View PDF
-                            </button>
+                            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                                <p class="text-[11px] font-extrabold text-slate-500 uppercase">Phosphorus (P)</p>
+                                <p class="text-lg font-black text-amber-600 mt-1" id="dashPhosphorus">14 kg/ha</p>
+                                <span class="text-[10px] font-bold text-amber-600">Medium</span>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                                <p class="text-[11px] font-extrabold text-slate-500 uppercase">Potassium (K)</p>
+                                <p class="text-lg font-black text-emerald-700 mt-1" id="dashPotassium">210 kg/ha</p>
+                                <span class="text-[10px] font-bold text-emerald-600">Optimal</span>
+                            </div>
                         </div>
 
-                        <!-- Ticket 2 -->
-                        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex items-center justify-between">
-                            <div>
-                                <div class="flex items-center space-x-2">
-                                    <span class="font-extrabold text-slate-900 text-xs">#KVK-9042 • Soil Test Query</span>
-                                    <span class="bg-amber-100 text-amber-800 text-[10px] font-black px-2 py-0.5 rounded-full">Scientist Reviewing</span>
-                                </div>
-                                <p class="text-xs text-slate-500 font-medium mt-0.5">Assigned to: Dr. M. P. Singh (Agronomist)</p>
-                            </div>
-                            <span class="text-xs text-slate-400 font-extrabold">Pending</span>
+                        <div class="bg-brand-50 border border-brand-200 p-3.5 rounded-2xl text-xs font-extrabold text-brand-900 flex items-center justify-between">
+                            <span id="dashDosageAdvice"><i class="fa-solid fa-circle-check text-brand-600 mr-2"></i> Recommended Dosage: Apply 45kg Urea + 15kg DAP per Acre.</span>
+                            <button onclick="speakText(document.getElementById('dashDosageAdvice').innerText)" class="speaker-btn text-brand-700 p-1.5 rounded-lg hover:bg-brand-100">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recent KVK Consultation Tickets -->
+                    <div class="bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h3 class="font-black text-slate-900 text-base flex items-center" data-i18n="recentTicketTitle">
+                                <i class="fa-solid fa-headset text-kvk-600 mr-2 text-xl"></i> Kisan Sarathi KVK Tickets
+                            </h3>
+                            <button onclick="switchTab('kvk')" class="text-kvk-700 font-extrabold text-xs hover:underline" data-i18n="btnNewTicket">+ New Ticket</button>
+                        </div>
+
+                        <div class="space-y-3" id="dashTicketList">
+                            <!-- Populated dynamically by KrishiAuth.renderTickets() -->
                         </div>
                     </div>
                 </div>
@@ -1092,6 +1109,191 @@
             </div>
         </section>
 
+        <!-- ================= SECTION 7: MY FARM PROFILE & ACCOUNT ================= -->
+        <section id="tab-profile" class="tab-content hidden space-y-6">
+            
+            <!-- When Logged Out: Prompt Banner -->
+            <div id="profileLoggedOutNotice" class="hidden bg-white p-8 rounded-3xl border-2 border-slate-200 text-center space-y-4 shadow-sm">
+                <div class="w-16 h-16 bg-sunshine-100 text-sunshine-600 rounded-full flex items-center justify-center mx-auto text-3xl">
+                    <i class="fa-solid fa-user-lock"></i>
+                </div>
+                <h3 class="text-2xl font-black text-slate-900" data-i18n="profileLoginRequired">Farmer Login Required</h3>
+                <p class="text-slate-600 text-sm max-w-md mx-auto" data-i18n="profileLoginNotice">
+                    Log in or create your verified Kisan account to view your farm details, registered plot soil health card, and past KVK scientist tickets.
+                </p>
+                <div class="pt-2 flex justify-center gap-3">
+                    <button onclick="openAuthModal('login')" class="bg-brand-600 hover:bg-brand-700 text-white font-black px-6 py-3 rounded-2xl text-xs sm:text-sm transition shadow-md touch-target flex items-center space-x-2">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span data-i18n="btnFarmerLogin">Farmer Login</span>
+                    </button>
+                    <button onclick="openAuthModal('signup')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold px-6 py-3 rounded-2xl text-xs sm:text-sm transition touch-target flex items-center space-x-2">
+                        <i class="fa-solid fa-user-plus text-brand-700"></i>
+                        <span data-i18n="btnCreateAccount">Create Account</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- When Logged In: Full Profile View -->
+            <div id="profileLoggedInView" class="space-y-6">
+                <!-- Farmer Hero Card -->
+                <div class="bg-gradient-to-r from-brand-900 via-emerald-800 to-brand-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl border-2 border-sunshine-400/50 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
+                        <div class="relative">
+                            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-sunshine-400 text-slate-950 font-black text-3xl sm:text-4xl flex items-center justify-center shadow-2xl border-4 border-white/30" id="profileAvatarInitials">
+                                RS
+                            </div>
+                            <span class="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-1.5 rounded-full border-2 border-white shadow text-xs">
+                                <i class="fa-solid fa-check"></i>
+                            </span>
+                        </div>
+                        <div class="space-y-1.5">
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                                <h2 class="text-2xl sm:text-3xl font-black text-white" id="profileFullName">Farmer Ramesh Singh</h2>
+                                <span class="bg-sunshine-400 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                                    <i class="fa-solid fa-shield-halved mr-1"></i> Aadhaar eKYC Verified
+                                </span>
+                            </div>
+                            <p class="text-emerald-100 text-sm font-semibold flex items-center justify-center sm:justify-start space-x-2">
+                                <i class="fa-solid fa-location-dot text-sunshine-400"></i>
+                                <span id="profileLocationText">Village Gill, Ludhiana (Punjab)</span>
+                            </p>
+                            <p class="text-xs text-emerald-200 font-medium flex items-center justify-center sm:justify-start space-x-2">
+                                <i class="fa-solid fa-phone text-emerald-300"></i>
+                                <span id="profilePhoneText">+91 98765 43210</span>
+                                <span class="text-emerald-400 mx-1">•</span>
+                                <span id="profileRegDateText">Kisan Member since 2026</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Profile Actions: Edit & Logout -->
+                    <div class="flex flex-wrap gap-2.5 justify-center self-stretch sm:self-auto">
+                        <button onclick="openEditProfileModal()" class="bg-sunshine-400 hover:bg-sunshine-500 text-slate-950 font-black text-xs sm:text-sm px-5 py-3 rounded-2xl transition shadow-md flex items-center space-x-2 touch-target">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                            <span data-i18n="btnEditProfile">Edit Profile</span>
+                        </button>
+                        <button onclick="KrishiAuth.logout()" class="bg-white/10 hover:bg-rose-600/80 border border-white/20 text-white font-extrabold text-xs sm:text-sm px-4 py-3 rounded-2xl transition flex items-center space-x-2 touch-target">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            <span data-i18n="btnLogout">Log Out</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 Key Farm Metrics -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-4 sm:p-5 rounded-3xl border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+                        <span class="text-slate-500 font-extrabold text-xs uppercase" data-i18n="labelLandSize">Total Land Holding</span>
+                        <div class="my-2">
+                            <p class="text-2xl sm:text-3xl font-black text-slate-900" id="profileMetricLand">4.5 <span class="text-xs font-bold text-slate-500">Acres</span></p>
+                            <p class="text-[11px] text-emerald-600 font-bold mt-0.5"><i class="fa-solid fa-faucet-drip mr-1"></i> Tube-well Irrigated</p>
+                        </div>
+                        <span class="text-[10px] font-black text-slate-400 uppercase">Registered Khasra #114/2</span>
+                    </div>
+
+                    <div class="bg-white p-4 sm:p-5 rounded-3xl border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+                        <span class="text-slate-500 font-extrabold text-xs uppercase" data-i18n="labelMainCrop">Primary Crop</span>
+                        <div class="my-2">
+                            <p class="text-lg sm:text-xl font-black text-brand-700 truncate" id="profileMetricCrop">Wheat (Kalyan Sona)</p>
+                            <p class="text-[11px] text-slate-600 font-bold mt-0.5">Rabi Season • Sowing Phase</p>
+                        </div>
+                        <span class="text-[10px] font-black text-emerald-600 uppercase">Target: 22 Qtl / Acre</span>
+                    </div>
+
+                    <div class="bg-white p-4 sm:p-5 rounded-3xl border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+                        <span class="text-slate-500 font-extrabold text-xs uppercase" data-i18n="labelSoilScore">Soil Health Index</span>
+                        <div class="my-2">
+                            <p class="text-2xl sm:text-3xl font-black text-emerald-700" id="profileMetricSoil">74<span class="text-xs font-bold text-slate-500">/100</span></p>
+                            <p class="text-[11px] text-emerald-600 font-bold mt-0.5"><i class="fa-solid fa-circle-check mr-1"></i> Grade: Good Fertility</p>
+                        </div>
+                        <span class="text-[10px] font-black text-slate-400 uppercase">ICAR Certified Soil Test</span>
+                    </div>
+
+                    <div class="bg-white p-4 sm:p-5 rounded-3xl border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+                        <span class="text-slate-500 font-extrabold text-xs uppercase" data-i18n="labelKvkCenter">Assigned KVK Center</span>
+                        <div class="my-2">
+                            <p class="text-lg font-black text-kvk-700 truncate" id="profileMetricKvk">KVK Ludhiana (PAU)</p>
+                            <p class="text-[11px] text-slate-600 font-bold mt-0.5">Senior Scientist: Dr. S. K. Sharma</p>
+                        </div>
+                        <span class="text-[10px] font-black text-kvk-600 uppercase">Distance: 14 KM</span>
+                    </div>
+                </div>
+
+                <!-- Soil Health Card Deep-Dive & Tickets Row -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Soil Health Card Detail -->
+                    <div class="bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-flask text-brand-600 text-2xl"></i>
+                                <div>
+                                    <h3 class="font-black text-slate-900 text-base" id="profileSoilPlotTitle">Soil Health Card (Plot #402)</h3>
+                                    <p class="text-[11px] text-slate-500 font-bold">Lab Sample ID: #SHC-LDH-2026-9901</p>
+                                </div>
+                            </div>
+                            <span class="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full">Updated</span>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3 text-center">
+                            <div class="bg-emerald-50/70 p-3 rounded-2xl border border-emerald-100">
+                                <p class="text-[11px] font-extrabold text-slate-500 uppercase">Nitrogen (N)</p>
+                                <p class="text-lg font-black text-emerald-700 mt-1" id="profileNitrogenVal">280 kg/ha</p>
+                                <span class="text-[10px] font-bold text-emerald-600">Optimal</span>
+                            </div>
+                            <div class="bg-amber-50/70 p-3 rounded-2xl border border-amber-100">
+                                <p class="text-[11px] font-extrabold text-slate-500 uppercase">Phosphorus (P)</p>
+                                <p class="text-lg font-black text-amber-600 mt-1" id="profilePhosphorusVal">14 kg/ha</p>
+                                <span class="text-[10px] font-bold text-amber-600">Medium</span>
+                            </div>
+                            <div class="bg-emerald-50/70 p-3 rounded-2xl border border-emerald-100">
+                                <p class="text-[11px] font-extrabold text-slate-500 uppercase">Potassium (K)</p>
+                                <p class="text-lg font-black text-emerald-700 mt-1" id="profilePotassiumVal">210 kg/ha</p>
+                                <span class="text-[10px] font-bold text-emerald-600">Optimal</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                                <span class="text-slate-500 font-bold">Soil pH Level:</span>
+                                <span class="font-black text-slate-900 ml-1">7.2 (Neutral / Best)</span>
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                                <span class="text-slate-500 font-bold">Organic Carbon:</span>
+                                <span class="font-black text-slate-900 ml-1">0.58% (Medium)</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-brand-50 border border-brand-200 p-3.5 rounded-2xl text-xs font-extrabold text-brand-900 flex items-center justify-between">
+                            <span id="profileDosageText"><i class="fa-solid fa-circle-check text-brand-600 mr-2"></i> Recommended Dosage: Apply 45kg Urea + 15kg DAP per Acre.</span>
+                            <button onclick="speakText(document.getElementById('profileDosageText').innerText)" class="speaker-btn text-brand-700 p-1.5 rounded-lg hover:bg-brand-100">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Past Kisan Sarathi Consultation Tickets -->
+                    <div class="bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-headset text-kvk-600 text-2xl"></i>
+                                <div>
+                                    <h3 class="font-black text-slate-900 text-base" data-i18n="myTicketsTitle">My Kisan Sarathi Tickets</h3>
+                                    <p class="text-[11px] text-slate-500 font-bold">Official KVK Scientist Consultation History</p>
+                                </div>
+                            </div>
+                            <button onclick="switchTab('kvk')" class="bg-kvk-100 hover:bg-kvk-200 text-kvk-800 font-extrabold text-xs px-3 py-1.5 rounded-xl transition" data-i18n="btnNewTicket">
+                                + New Ticket
+                            </button>
+                        </div>
+
+                        <div class="space-y-3" id="profileTicketList">
+                            <!-- Populated dynamically by KrishiAuth.renderTickets() -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
     </main>
 
     <!-- FLOATING VOICE KRISHI AI ASSISTANT WIDGET -->
@@ -1187,6 +1389,324 @@
                 Close Voice Mode
             </button>
         </div>
+    </div>
+
+    <!-- ================= AUTHENTICATION MODAL (LOGIN & SIGNUP) ================= -->
+    <div id="authModal" class="hidden fixed inset-0 bg-slate-900/75 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border-4 border-brand-600 space-y-5 my-8 relative">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b pb-4 border-slate-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-100 text-brand-700 flex items-center justify-center text-2xl font-black shadow-inner">
+                        <i class="fa-solid fa-wheat-awn"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl sm:text-2xl font-black text-slate-900 flex items-center">
+                            <span id="authModalTitle">Farmer Login</span>
+                            <span class="text-sunshine-500 ml-1">🌾</span>
+                        </h3>
+                        <p class="text-xs text-slate-500 font-bold" id="authModalSubtitle">Secure Kisan Sarathi Account Access</p>
+                    </div>
+                </div>
+                <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition">
+                    <i class="fa-solid fa-xmark text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Mode Switcher Tabs (Login vs Signup) -->
+            <div class="grid grid-cols-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200">
+                <button id="authTabBtnLogin" onclick="switchAuthMode('login')" class="py-2.5 rounded-xl font-black text-xs sm:text-sm transition flex items-center justify-center space-x-2 bg-white text-brand-900 shadow">
+                    <i class="fa-solid fa-right-to-bracket text-brand-600"></i>
+                    <span data-i18n="tabLogin">Farmer Login</span>
+                </button>
+                <button id="authTabBtnSignup" onclick="switchAuthMode('signup')" class="py-2.5 rounded-xl font-extrabold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-user-plus text-slate-500"></i>
+                    <span data-i18n="tabSignup">New Registration</span>
+                </button>
+            </div>
+
+            <!-- Global Error / Alert Notice -->
+            <div id="authNotice" class="hidden p-3 rounded-2xl text-xs font-bold flex items-center justify-between">
+                <span id="authNoticeText"></span>
+                <button onclick="hideAuthNotice()" class="text-xs ml-2 underline">Dismiss</button>
+            </div>
+
+            <!-- ================= VIEW 1: LOGIN FORM ================= -->
+            <div id="authLoginView" class="space-y-4">
+                
+                <!-- Auth Method Selector (OTP vs Password) -->
+                <div class="flex items-center justify-between bg-emerald-50/80 p-2.5 rounded-2xl border border-emerald-200 text-xs">
+                    <span class="font-extrabold text-emerald-900">Sign in with:</span>
+                    <div class="flex space-x-1">
+                        <button id="loginMethodOtpBtn" onclick="toggleLoginMethod('otp')" class="px-3 py-1.5 rounded-xl font-black bg-brand-600 text-white shadow-sm text-xs transition">
+                            <i class="fa-solid fa-mobile-screen mr-1"></i> Phone OTP
+                        </button>
+                        <button id="loginMethodPassBtn" onclick="toggleLoginMethod('pass')" class="px-3 py-1.5 rounded-xl font-bold bg-transparent text-slate-700 hover:bg-white text-xs transition">
+                            <i class="fa-solid fa-key mr-1"></i> Password
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Phone Input -->
+                <div class="space-y-1">
+                    <label class="block text-xs font-extrabold text-slate-700 uppercase" data-i18n="labelPhone">Mobile Number (मोबाइल नंबर)</label>
+                    <div class="relative flex items-center">
+                        <span class="absolute left-3.5 text-xs font-black text-slate-600 flex items-center">
+                            🇮🇳 +91
+                        </span>
+                        <input type="tel" id="loginPhone" maxlength="10" placeholder="98765 43210" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-brand-600 rounded-2xl pl-16 pr-4 py-3 text-sm font-black text-slate-900 focus:outline-none touch-target" value="9876543210">
+                    </div>
+                </div>
+
+                <!-- OTP Section -->
+                <div id="loginOtpGroup" class="space-y-3">
+                    <div id="loginOtpPromptGroup">
+                        <button id="btnSendLoginOtp" onclick="KrishiAuth.sendLoginOtp()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-black text-sm py-3.5 rounded-2xl transition shadow-md touch-target flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span data-i18n="btnSendOtp">Send OTP to Mobile (ओटीपी भेजें)</span>
+                        </button>
+                    </div>
+
+                    <div id="loginOtpVerificationGroup" class="hidden space-y-3 p-4 bg-emerald-50 rounded-2xl border border-emerald-200">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-extrabold text-emerald-950 uppercase">Enter 6-Digit OTP</label>
+                            <span id="loginOtpTimer" class="text-xs font-black text-brand-700">Resend in 30s</span>
+                        </div>
+                        <input type="text" id="loginOtpInput" maxlength="6" placeholder="• • • • • •" class="w-full text-center tracking-[0.5em] bg-white border-2 border-emerald-400 focus:border-brand-700 rounded-2xl py-3 text-lg font-black text-slate-900 focus:outline-none">
+                        
+                        <div class="bg-amber-100/80 border border-amber-300 text-amber-900 p-2.5 rounded-xl text-[11px] font-bold flex items-center justify-between">
+                            <span><i class="fa-solid fa-bolt text-sunshine-600 mr-1.5"></i> <span id="loginOtpDemoHelper">Mock Demo OTP: Enter <strong>123456</strong> or sent code</span></span>
+                            <button onclick="document.getElementById('loginOtpInput').value='123456'" class="text-[10px] bg-amber-200 px-2 py-0.5 rounded font-black hover:bg-amber-300">Auto-fill</button>
+                        </div>
+
+                        <button onclick="KrishiAuth.verifyLoginOtp()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm py-3.5 rounded-2xl transition shadow-md touch-target flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span data-i18n="btnVerifyLogin">Verify OTP & Log In (सत्यापित करें)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Password Fallback Section (Hidden by default) -->
+                <div id="loginPasswordGroup" class="hidden space-y-3">
+                    <div class="space-y-1">
+                        <label class="block text-xs font-extrabold text-slate-700 uppercase">Password (पासवर्ड)</label>
+                        <input type="password" id="loginPasswordInput" placeholder="••••••••" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-brand-600 rounded-2xl px-4 py-3 text-sm font-black text-slate-900 focus:outline-none touch-target">
+                    </div>
+                    <button onclick="KrishiAuth.loginWithPassword()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-black text-sm py-3.5 rounded-2xl transition shadow-md touch-target flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span>Log In with Password</span>
+                    </button>
+                </div>
+
+                <!-- 1-Click Demo Login Button (Hackathon Friendly) -->
+                <div class="pt-2 border-t border-slate-200">
+                    <button onclick="KrishiAuth.quickDemoLogin()" class="w-full bg-sunshine-400 hover:bg-sunshine-500 text-slate-950 font-black text-xs py-3 rounded-2xl transition shadow-sm flex items-center justify-center space-x-2 touch-target">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Instant Demo Login (Farmer Ramesh Singh)</span>
+                    </button>
+                </div>
+
+                <p class="text-center text-xs font-bold text-slate-500 pt-2">
+                    New to KrishiOne? 
+                    <button onclick="switchAuthMode('signup')" class="text-brand-700 font-black underline ml-1 hover:text-brand-800">Create Free Account</button>
+                </p>
+            </div>
+
+            <!-- ================= VIEW 2: SIGNUP FORM ================= -->
+            <div id="authSignupView" class="hidden space-y-3.5 max-h-[65vh] overflow-y-auto pr-1 custom-scrollbar">
+                
+                <div class="space-y-1">
+                    <label class="block text-xs font-extrabold text-slate-700 uppercase" data-i18n="labelFullName">Full Name (किसान का पूरा नाम) *</label>
+                    <input type="text" id="signupName" placeholder="e.g. Ramesh Singh / राजेश कुमार" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-brand-600 rounded-2xl px-4 py-2.5 text-xs font-black text-slate-900 focus:outline-none touch-target">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-xs font-extrabold text-slate-700 uppercase" data-i18n="labelPhone">Mobile Number (मोबाइल नंबर) *</label>
+                    <div class="relative flex items-center">
+                        <span class="absolute left-3.5 text-xs font-black text-slate-600">🇮🇳 +91</span>
+                        <input type="tel" id="signupPhone" maxlength="10" placeholder="98765 00000" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-brand-600 rounded-2xl pl-16 pr-4 py-2.5 text-xs font-black text-slate-900 focus:outline-none touch-target">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="space-y-1">
+                        <label class="block text-xs font-extrabold text-slate-700 uppercase" data-i18n="labelVillage">Village (गाँव) *</label>
+                        <input type="text" id="signupVillage" placeholder="e.g. Gill" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-brand-600 rounded-2xl px-3 py-2 text-xs font-black text-slate-900 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-extrabold text-slate-700 uppercase" data-i18n="labelDistrict">District (ज़िला) *</label>
+                        <input type="text" id="signupDistrict" placeholder="e.g. Ludhiana" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-brand-600 rounded-2xl px-3 py-2 text-xs font-black text-slate-900 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-xs font-extrabold text-slate-700 uppercase" data-i18n="labelState">State (राज्य) *</label>
+                    <select id="signupState" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-brand-600 rounded-2xl px-3 py-2 text-xs font-black text-slate-900 focus:outline-none">
+                        <option value="Punjab">Punjab (पंजाब)</option>
+                        <option value="Haryana">Haryana (हरियाणा)</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh (उत्तर प्रदेश)</option>
+                        <option value="Rajasthan">Rajasthan (राजस्थान)</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh (मध्य प्रदेश)</option>
+                        <option value="Bihar">Bihar (बिहार)</option>
+                        <option value="Maharashtra">Maharashtra (महाराष्ट्र)</option>
+                        <option value="Gujarat">Gujarat (गुजरात)</option>
+                        <option value="Andhra Pradesh">Andhra Pradesh (आंध्र प्रदेश)</option>
+                        <option value="Tamil Nadu">Tamil Nadu (तमिलनाडु)</option>
+                        <option value="West Bengal">West Bengal (पश्चिम बंगाल)</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="space-y-1">
+                        <label class="block text-xs font-extrabold text-slate-700 uppercase" data-i18n="labelMainCrop">Primary Crop (मुख्य फसल) *</label>
+                        <select id="signupCrop" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-brand-600 rounded-2xl px-3 py-2 text-xs font-black text-slate-900 focus:outline-none">
+                            <option value="Wheat (Kalyan Sona)">Wheat (Kalyan Sona)</option>
+                            <option value="Paddy (PB-1121)">Paddy (PB-1121)</option>
+                            <option value="Mustard (Pusa Bold)">Mustard (Pusa Bold)</option>
+                            <option value="Cotton (Bt-2)">Cotton (Bt-2)</option>
+                            <option value="Potato (Kufri Jyoti)">Potato (Kufri Jyoti)</option>
+                            <option value="Tomato (Hybrid-01)">Tomato (Hybrid-01)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-extrabold text-slate-700 uppercase" data-i18n="labelLandSize">Land Size (Acres) *</label>
+                        <input type="number" step="0.5" id="signupLandSize" placeholder="e.g. 4.5" value="4.5" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-brand-600 rounded-2xl px-3 py-2 text-xs font-black text-slate-900 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="space-y-1">
+                        <label class="block text-xs font-extrabold text-slate-700 uppercase">Preferred Language</label>
+                        <select id="signupLang" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-brand-600 rounded-2xl px-3 py-2 text-xs font-black text-slate-900 focus:outline-none">
+                            <option value="en">English</option>
+                            <option value="hi">हिंदी (Hindi)</option>
+                            <option value="pb">ਪੰਜਾਬੀ (Punjabi)</option>
+                            <option value="mr">मराठी (Marathi)</option>
+                            <option value="te">తెలుగు (Telugu)</option>
+                            <option value="ta">தமிழ் (Tamil)</option>
+                            <option value="bn">বাংলা (Bengali)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-extrabold text-slate-700 uppercase">Password (Optional)</label>
+                        <input type="password" id="signupPassword" placeholder="••••••••" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-brand-600 rounded-2xl px-3 py-2 text-xs font-black text-slate-900 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Signup OTP Step -->
+                <div id="signupOtpSection" class="pt-2 space-y-3">
+                    <button id="btnSendSignupOtp" onclick="KrishiAuth.sendSignupOtp()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-black text-xs sm:text-sm py-3 rounded-2xl transition shadow-md touch-target flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>Verify Phone & Complete Registration</span>
+                    </button>
+
+                    <div id="signupOtpVerificationGroup" class="hidden space-y-2.5 p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-extrabold text-emerald-950 uppercase">Enter 6-Digit OTP</label>
+                            <span id="signupOtpHelperBadge" class="text-[10px] font-black bg-sunshine-200 text-slate-900 px-2 py-0.5 rounded">Demo OTP: 123456</span>
+                        </div>
+                        <input type="text" id="signupOtpInput" maxlength="6" placeholder="• • • • • •" class="w-full text-center tracking-[0.5em] bg-white border-2 border-emerald-400 focus:border-brand-700 rounded-2xl py-2.5 text-base font-black text-slate-900 focus:outline-none">
+                        
+                        <button onclick="KrishiAuth.verifySignupOtp()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm py-3 rounded-2xl transition shadow-md touch-target flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>Confirm & Activate Kisan Profile</span>
+                        </button>
+                    </div>
+                </div>
+
+                <p class="text-center text-xs font-bold text-slate-500 pt-1">
+                    Already registered? 
+                    <button onclick="switchAuthMode('login')" class="text-brand-700 font-black underline ml-1 hover:text-brand-800">Log In Here</button>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= EDIT FARM PROFILE MODAL ================= -->
+    <div id="editProfileModal" class="hidden fixed inset-0 bg-slate-900/75 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border-4 border-sunshine-400 space-y-4 my-8 relative">
+            <div class="flex items-center justify-between border-b pb-3 border-slate-200">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-10 h-10 rounded-xl bg-sunshine-100 text-slate-950 flex items-center justify-center text-lg font-black">
+                        <i class="fa-solid fa-user-pen"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900">Edit Farm Profile</h3>
+                        <p class="text-[11px] text-slate-500 font-bold">Update your official Kisan details</p>
+                    </div>
+                </div>
+                <button onclick="closeEditProfileModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div class="space-y-1">
+                    <label class="block font-extrabold text-slate-700 uppercase">Farmer Full Name</label>
+                    <input type="text" id="editProfileName" class="w-full bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 font-black text-slate-900 focus:outline-none focus:border-brand-600">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="space-y-1">
+                        <label class="block font-extrabold text-slate-700 uppercase">Village</label>
+                        <input type="text" id="editProfileVillage" class="w-full bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 font-black text-slate-900 focus:outline-none focus:border-brand-600">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block font-extrabold text-slate-700 uppercase">District</label>
+                        <input type="text" id="editProfileDistrict" class="w-full bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 font-black text-slate-900 focus:outline-none focus:border-brand-600">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block font-extrabold text-slate-700 uppercase">State</label>
+                    <select id="editProfileState" class="w-full bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 font-black text-slate-900 focus:outline-none focus:border-brand-600">
+                        <option value="Punjab">Punjab</option>
+                        <option value="Haryana">Haryana</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Bihar">Bihar</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Gujarat">Gujarat</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="space-y-1">
+                        <label class="block font-extrabold text-slate-700 uppercase">Primary Crop</label>
+                        <select id="editProfileCrop" class="w-full bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 font-black text-slate-900 focus:outline-none focus:border-brand-600">
+                            <option value="Wheat (Kalyan Sona)">Wheat (Kalyan Sona)</option>
+                            <option value="Paddy (PB-1121)">Paddy (PB-1121)</option>
+                            <option value="Mustard (Pusa Bold)">Mustard (Pusa Bold)</option>
+                            <option value="Cotton (Bt-2)">Cotton (Bt-2)</option>
+                            <option value="Potato (Kufri Jyoti)">Potato (Kufri Jyoti)</option>
+                            <option value="Tomato (Hybrid-01)">Tomato (Hybrid-01)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block font-extrabold text-slate-700 uppercase">Land Size (Acres)</label>
+                        <input type="number" step="0.5" id="editProfileLandSize" class="w-full bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 font-black text-slate-900 focus:outline-none focus:border-brand-600">
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-2 flex space-x-2">
+                <button onclick="closeEditProfileModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs py-3 rounded-xl transition">
+                    Cancel
+                </button>
+                <button onclick="KrishiAuth.saveProfileEdits()" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-black text-xs py-3 rounded-xl transition shadow-md">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= APP AUTH CHECK LOADING OVERLAY ================= -->
+    <div id="authLoadingOverlay" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-4">
+        <div class="w-16 h-16 border-4 border-brand-500 border-t-sunshine-400 rounded-full animate-spin"></div>
+        <p class="text-white font-black text-sm mt-4 tracking-wide">Syncing Kisan Sarathi Profile...</p>
     </div>
 
     <!-- FOOTER -->
@@ -1309,7 +1829,30 @@
                 btnRequest: "Request Pickup",
                 nearbyDrivers: "Verified Local Drivers Available Now",
                 callDriver: "Call Driver",
-                askKrishi: "Krishi AI Doctor"
+                askKrishi: "Krishi AI Doctor",
+                tabLogin: "Farmer Login",
+                tabSignup: "New Registration",
+                labelPhone: "Mobile Number",
+                btnSendOtp: "Send OTP to Mobile",
+                btnVerifyLogin: "Verify OTP & Log In",
+                labelFullName: "Full Name",
+                labelVillage: "Village",
+                labelDistrict: "District",
+                labelState: "State",
+                labelMainCrop: "Primary Crop",
+                labelLandSize: "Land Size (Acres)",
+                navProfile: "My Farm Profile",
+                profileLoginRequired: "Farmer Login Required",
+                profileLoginNotice: "Log in or create your verified Kisan account to view your farm details, registered plot soil health card, and past KVK scientist tickets.",
+                btnEditProfile: "Edit Profile",
+                btnLogout: "Log Out",
+                myTicketsTitle: "My Kisan Sarathi Tickets",
+                labelKvkCenter: "Assigned KVK Center",
+                personalizedBadge: "Personalized Kisan Portal",
+                personalizedPromptTitle: "Login to See Your Registered Soil Health Card & KVK Tickets",
+                personalizedPromptBody: "Overview, Mandi rates, weather advisory and crop transport remain free and open. Sign in to your Kisan account to link your land plot, track personalized KVK Scientist consultation tickets, and view official PM-KISAN installment status.",
+                btnFarmerLogin: "Farmer Login",
+                btnCreateAccount: "Create Free Account"
             },
             hi: {
                 tagline: "भारत किसान स्मार्ट कृषि प्लेटफार्म",
@@ -1640,23 +2183,23 @@
             const center = document.getElementById('kvkCenter').value;
             const crop = document.getElementById('ticketCrop').value;
             const issue = document.getElementById('ticketIssue').value;
+            const desc = document.getElementById('ticketDesc').value.trim();
+            const ticketId = 'KVK-' + Math.floor(9105 + Math.random() * 890);
 
-            const ticketList = document.getElementById('dashTicketList');
-            const newTicket = document.createElement('div');
-            newTicket.className = "bg-emerald-50 p-3.5 rounded-2xl border border-emerald-200 flex items-center justify-between";
-            newTicket.innerHTML = `
-                <div>
-                    <div class="flex items-center space-x-2">
-                        <span class="font-extrabold text-slate-900 text-xs">#KVK-9105 • ${crop} (${issue})</span>
-                        <span class="bg-amber-100 text-amber-800 text-[10px] font-black px-2 py-0.5 rounded-full">New Ticket</span>
-                    </div>
-                    <p class="text-xs text-slate-500 font-medium mt-0.5">Assigned to: ${center}</p>
-                </div>
-                <span class="text-xs text-brand-700 font-extrabold">Pending Scientist Response</span>
-            `;
-            ticketList.prepend(newTicket);
+            if (typeof KrishiAuth !== 'undefined') {
+                KrishiAuth.addTicket({
+                    id: ticketId,
+                    crop: crop,
+                    issue: issue,
+                    status: "Pending Scientist Response",
+                    prescription: "Pending",
+                    doctor: center,
+                    advice: desc || `Assigned to Senior Scientist at ${center}`,
+                    date: new Date().toISOString().split('T')[0]
+                });
+            }
 
-            alert(`Ticket Submitted Successfully!\nCenter: ${center}\nTicket Reference ID: #KVK-9105`);
+            alert(`Ticket Submitted Successfully!\nCenter: ${center}\nTicket Reference ID: #${ticketId}`);
             document.getElementById('ticketDesc').value = '';
         }
 
@@ -1788,8 +2331,719 @@
             document.getElementById('voiceModal').classList.toggle('hidden');
         }
 
+        // ================= KRISHIONE AUTH & PROFILE SERVICE =================
+        window.KRISHI_CONFIG = window.KRISHI_CONFIG || {
+            firebase: {
+                apiKey: "",
+                authDomain: "",
+                projectId: "",
+                storageBucket: "",
+                messagingSenderId: "",
+                appId: ""
+            }
+        };
+
+        const DEMO_USER = {
+            id: "farmer_8901",
+            name: "Ramesh Singh",
+            phone: "9876543210",
+            village: "Gill",
+            district: "Ludhiana",
+            state: "Punjab",
+            crop: "Wheat (Kalyan Sona)",
+            landSize: "4.5",
+            preferredLang: "en",
+            plotNumber: "#402",
+            soilScore: "74/100",
+            nitrogen: "280 kg/ha",
+            phosphorus: "14 kg/ha",
+            potassium: "210 kg/ha",
+            dosageAdvice: "Apply 45kg Urea + 15kg DAP per Acre.",
+            createdAt: "2026-09-01"
+        };
+
+        const DEFAULT_TICKETS = [
+            {
+                id: "KVK-8821",
+                crop: "Wheat (Kalyan Sona)",
+                issue: "Yellow Rust",
+                status: "Resolved",
+                prescription: "Propiconazole 25% EC Spray",
+                doctor: "Dr. S. K. Sharma (KVK Ludhiana)",
+                advice: "Spray Propiconazole 25% EC @ 1 ml/litre water during clear sky.",
+                date: "2026-09-20"
+            },
+            {
+                id: "KVK-9042",
+                crop: "Wheat",
+                issue: "Soil Test Query",
+                status: "Scientist Reviewing",
+                prescription: "Pending",
+                doctor: "Dr. M. P. Singh (Agronomist)",
+                advice: "Assigned to Dr. M. P. Singh for soil moisture review.",
+                date: "2026-09-25"
+            }
+        ];
+
+        const KrishiAuth = {
+            currentUser: null,
+            generatedOtp: null,
+            otpTimerInterval: null,
+            firebaseApp: null,
+            db: null,
+
+            init: function() {
+                this.initFirebase();
+                this.checkSession();
+                this.setupRouting();
+            },
+
+            initFirebase: function() {
+                try {
+                    const cfg = window.KRISHI_CONFIG && window.KRISHI_CONFIG.firebase;
+                    if (cfg && cfg.apiKey && typeof firebase !== 'undefined' && !firebase.apps.length) {
+                        this.firebaseApp = firebase.initializeApp(cfg);
+                        this.db = firebase.firestore();
+                        console.log("[KrishiAuth] Firebase Auth & Firestore successfully initialized.");
+                    }
+                } catch (err) {
+                    console.warn("[KrishiAuth] Firebase init fallback to local persistence:", err);
+                }
+            },
+
+            checkSession: function() {
+                const overlay = document.getElementById('authLoadingOverlay');
+                if (overlay) overlay.classList.remove('hidden');
+
+                try {
+                    const sessionData = localStorage.getItem('krishi_user_session');
+                    if (sessionData) {
+                        this.currentUser = JSON.parse(sessionData);
+                    } else {
+                        this.currentUser = null;
+                    }
+                } catch (e) {
+                    this.currentUser = null;
+                }
+
+                setTimeout(() => {
+                    if (overlay) overlay.classList.add('hidden');
+                    this.updateUI();
+                }, 250);
+            },
+
+            updateUI: function() {
+                this.renderNavAuth();
+                this.renderContextBar();
+                this.renderPersonalizedOverview();
+                this.renderProfileTab();
+                this.renderTickets();
+            },
+
+            renderNavAuth: function() {
+                const container = document.getElementById('navAuthContainer');
+                if (!container) return;
+
+                if (this.currentUser) {
+                    const initials = this.getInitials(this.currentUser.name);
+                    container.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <button onclick="switchTab('profile')" class="bg-brand-950/90 hover:bg-brand-900 border-2 border-sunshine-400 text-white font-extrabold text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 rounded-2xl flex items-center space-x-2 shadow-inner transition touch-target">
+                                <span class="w-6 h-6 rounded-full bg-sunshine-400 text-slate-950 font-black text-xs flex items-center justify-center">${initials}</span>
+                                <span id="navFarmerName" class="max-w-[100px] truncate text-white">${this.currentUser.name.split(' ')[0]}</span>
+                            </button>
+                            <button onclick="KrishiAuth.logout()" class="p-2 sm:p-2.5 rounded-2xl bg-rose-600/90 hover:bg-rose-600 text-white font-black transition flex items-center justify-center shadow-md touch-target" title="Log Out / बाहर निकलें">
+                                <i class="fa-solid fa-arrow-right-from-bracket text-xs sm:text-sm"></i>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <button onclick="openAuthModal('login')" class="bg-sunshine-400 hover:bg-sunshine-500 text-slate-950 font-black text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-2xl flex items-center space-x-1.5 sm:space-x-2 shadow-md transition touch-target">
+                            <i class="fa-solid fa-right-to-bracket text-sm"></i>
+                            <span data-i18n="btnFarmerLogin">Farmer Login</span>
+                        </button>
+                    `;
+                }
+            },
+
+            renderContextBar: function() {
+                const bar = document.getElementById('farmerContextBar');
+                if (!bar) return;
+
+                if (this.currentUser) {
+                    bar.innerHTML = `
+                        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-bold">
+                            <div class="flex items-center space-x-4 cursor-pointer" onclick="switchTab('profile')">
+                                <span class="flex items-center text-sunshine-400 hover:text-white transition">
+                                    <i class="fa-solid fa-circle-user mr-1.5 text-base"></i>
+                                    <span id="topFarmerName">Welcome, Farmer ${this.currentUser.name}</span>
+                                </span>
+                                <span class="hidden md:inline-flex items-center text-emerald-200">
+                                    <i class="fa-solid fa-location-dot mr-1 text-emerald-400"></i>
+                                    <span id="topFarmerLocation">Village ${this.currentUser.village}, ${this.currentUser.district} (${this.currentUser.state})</span>
+                                </span>
+                            </div>
+                            
+                            <div class="flex items-center space-x-3">
+                                <span class="bg-emerald-800 text-emerald-100 px-3 py-1 rounded-full text-xs font-extrabold border border-emerald-600 flex items-center">
+                                    <i class="fa-solid fa-seedling mr-1.5 text-sunshine-400"></i>
+                                    <span id="topFarmerCrop">Crop: ${this.currentUser.crop}</span>
+                                </span>
+                                <span class="bg-brand-600 text-white px-3 py-1 rounded-full text-xs font-black shadow-sm flex items-center">
+                                    <i class="fa-solid fa-flask mr-1.5"></i>
+                                    <span id="topSoilScore">Soil Health: Good (${this.currentUser.soilScore || '74/100'})</span>
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    bar.innerHTML = `
+                        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-bold">
+                            <div class="flex items-center space-x-3 text-emerald-200">
+                                <span class="flex items-center text-sunshine-400">
+                                    <i class="fa-solid fa-wheat-awn mr-1.5 text-base"></i>
+                                    <span>Namaste Kisan! Welcome to KrishiOne Portal</span>
+                                </span>
+                                <span class="hidden md:inline-flex items-center text-emerald-300 text-xs">
+                                    <i class="fa-solid fa-circle-info mr-1 text-sunshine-400"></i>
+                                    <span>Live Mandi rates, weather advisory and disease scanner are open to all</span>
+                                </span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="openAuthModal('login')" class="bg-sunshine-400 hover:bg-sunshine-500 text-slate-950 px-3.5 py-1.5 rounded-full text-xs font-black shadow-md flex items-center transition">
+                                    <i class="fa-solid fa-user-lock mr-1.5"></i>
+                                    <span>Login to Personalize Farm & Soil Data</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+
+            renderPersonalizedOverview: function() {
+                const guestPrompt = document.getElementById('guestPersonalizedPrompt');
+                const loggedInSection = document.getElementById('loggedInPersonalizedSection');
+                if (!guestPrompt || !loggedInSection) return;
+
+                if (this.currentUser) {
+                    guestPrompt.classList.add('hidden');
+                    loggedInSection.classList.remove('hidden');
+
+                    const soilTitle = document.getElementById('dashSoilTitle');
+                    if (soilTitle) soilTitle.innerText = `Soil Health Card (Plot ${this.currentUser.plotNumber || '#402'})`;
+                    
+                    const nEl = document.getElementById('dashNitrogen');
+                    if (nEl) nEl.innerText = this.currentUser.nitrogen || "280 kg/ha";
+                    
+                    const pEl = document.getElementById('dashPhosphorus');
+                    if (pEl) pEl.innerText = this.currentUser.phosphorus || "14 kg/ha";
+                    
+                    const kEl = document.getElementById('dashPotassium');
+                    if (kEl) kEl.innerText = this.currentUser.potassium || "210 kg/ha";
+                    
+                    const adviceEl = document.getElementById('dashDosageAdvice');
+                    if (adviceEl) adviceEl.innerHTML = `<i class="fa-solid fa-circle-check text-brand-600 mr-2"></i> Recommended: ${this.currentUser.dosageAdvice || "Apply 45kg Urea + 15kg DAP per Acre."}`;
+                } else {
+                    guestPrompt.classList.remove('hidden');
+                    loggedInSection.classList.add('hidden');
+                }
+            },
+
+            renderProfileTab: function() {
+                const loggedOutNotice = document.getElementById('profileLoggedOutNotice');
+                const loggedInView = document.getElementById('profileLoggedInView');
+                if (!loggedOutNotice || !loggedInView) return;
+
+                if (this.currentUser) {
+                    loggedOutNotice.classList.add('hidden');
+                    loggedInView.classList.remove('hidden');
+
+                    const initials = this.getInitials(this.currentUser.name);
+                    const avatar = document.getElementById('profileAvatarInitials');
+                    if (avatar) avatar.innerText = initials;
+
+                    const nameEl = document.getElementById('profileFullName');
+                    if (nameEl) nameEl.innerText = `Farmer ${this.currentUser.name}`;
+
+                    const locEl = document.getElementById('profileLocationText');
+                    if (locEl) locEl.innerText = `Village ${this.currentUser.village}, ${this.currentUser.district} (${this.currentUser.state})`;
+
+                    const phoneEl = document.getElementById('profilePhoneText');
+                    if (phoneEl) phoneEl.innerText = `+91 ${this.currentUser.phone}`;
+
+                    const landEl = document.getElementById('profileMetricLand');
+                    if (landEl) landEl.innerHTML = `${this.currentUser.landSize || '4.5'} <span class="text-xs font-bold text-slate-500">Acres</span>`;
+
+                    const cropEl = document.getElementById('profileMetricCrop');
+                    if (cropEl) cropEl.innerText = this.currentUser.crop;
+
+                    const kvkEl = document.getElementById('profileMetricKvk');
+                    if (kvkEl) kvkEl.innerText = `KVK ${this.currentUser.district} Center`;
+
+                    const soilScoreEl = document.getElementById('profileMetricSoil');
+                    if (soilScoreEl) soilScoreEl.innerHTML = `${(this.currentUser.soilScore || '74/100').replace('/100','')}<span class="text-xs font-bold text-slate-500">/100</span>`;
+
+                    const plotEl = document.getElementById('profileSoilPlotTitle');
+                    if (plotEl) plotEl.innerText = `Soil Health Card (Plot ${this.currentUser.plotNumber || '#402'})`;
+
+                    const nEl = document.getElementById('profileNitrogenVal');
+                    if (nEl) nEl.innerText = this.currentUser.nitrogen || "280 kg/ha";
+
+                    const pEl = document.getElementById('profilePhosphorusVal');
+                    if (pEl) pEl.innerText = this.currentUser.phosphorus || "14 kg/ha";
+
+                    const kEl = document.getElementById('profilePotassiumVal');
+                    if (kEl) kEl.innerText = this.currentUser.potassium || "210 kg/ha";
+
+                    const dosageEl = document.getElementById('profileDosageText');
+                    if (dosageEl) dosageEl.innerHTML = `<i class="fa-solid fa-circle-check text-brand-600 mr-2"></i> Recommended Dosage: ${this.currentUser.dosageAdvice || "Apply 45kg Urea + 15kg DAP per Acre."}`;
+                } else {
+                    loggedOutNotice.classList.remove('hidden');
+                    loggedInView.classList.add('hidden');
+                }
+            },
+
+            getUserTickets: function() {
+                const userId = this.currentUser ? this.currentUser.id : 'guest';
+                const key = 'krishi_tickets_' + userId;
+                try {
+                    const saved = localStorage.getItem(key);
+                    if (saved) return JSON.parse(saved);
+                } catch(e) {}
+                return [...DEFAULT_TICKETS];
+            },
+
+            saveUserTickets: function(tickets) {
+                const userId = this.currentUser ? this.currentUser.id : 'guest';
+                const key = 'krishi_tickets_' + userId;
+                try {
+                    localStorage.setItem(key, JSON.stringify(tickets));
+                } catch(e) {}
+            },
+
+            addTicket: function(ticket) {
+                const tickets = this.getUserTickets();
+                tickets.unshift(ticket);
+                this.saveUserTickets(tickets);
+                this.renderTickets();
+            },
+
+            renderTickets: function() {
+                const dashList = document.getElementById('dashTicketList');
+                const profileList = document.getElementById('profileTicketList');
+                const tickets = this.getUserTickets();
+
+                const renderItem = (t) => `
+                    <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex items-center justify-between transition hover:border-slate-300">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-extrabold text-slate-900 text-xs">#${t.id} • ${t.crop} (${t.issue})</span>
+                                <span class="${t.status === 'Resolved' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'} text-[10px] font-black px-2 py-0.5 rounded-full">${t.status}</span>
+                            </div>
+                            <p class="text-xs text-slate-500 font-medium mt-0.5">${t.prescription !== 'Pending' ? 'Prescription: ' + t.prescription : 'Status: ' + (t.advice || 'Scientist Reviewing')}</p>
+                        </div>
+                        ${t.prescription !== 'Pending' ? `
+                            <button onclick="openPrescriptionModal('${t.issue}', '${t.doctor || 'Senior Scientist'}', '${t.advice || 'Follow expert dosage'}')" class="bg-kvk-100 text-kvk-800 font-extrabold text-xs px-3 py-1.5 rounded-xl hover:bg-kvk-200 transition">
+                                View PDF
+                            </button>
+                        ` : `
+                            <span class="text-xs text-slate-400 font-extrabold">Pending</span>
+                        `}
+                    </div>
+                `;
+
+                const html = tickets.map(renderItem).join('');
+                if (dashList) dashList.innerHTML = html;
+                if (profileList) profileList.innerHTML = html;
+            },
+
+            sendLoginOtp: function() {
+                const phoneInput = document.getElementById('loginPhone');
+                const phone = phoneInput ? phoneInput.value.trim() : '';
+
+                if (phone.length < 10) {
+                    this.showNotice('Please enter a valid 10-digit mobile number.', 'error');
+                    return;
+                }
+
+                this.generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+                document.getElementById('loginOtpPromptGroup').classList.add('hidden');
+                document.getElementById('loginOtpVerificationGroup').classList.remove('hidden');
+
+                const helper = document.getElementById('loginOtpDemoHelper');
+                if (helper) {
+                    helper.innerHTML = `Verification Code sent! <strong>Demo OTP: ${this.generatedOtp}</strong> (or 123456)`;
+                }
+
+                this.startOtpCountdown('loginOtpTimer');
+                this.showNotice(`OTP sent to +91 ${phone}! Check demo code above.`, 'success');
+                speakText("One time password sent to your mobile number.");
+            },
+
+            verifyLoginOtp: function() {
+                const otpInput = document.getElementById('loginOtpInput');
+                const entered = otpInput ? otpInput.value.trim() : '';
+                const phone = document.getElementById('loginPhone').value.trim();
+
+                if (entered !== this.generatedOtp && entered !== '123456' && entered.length !== 6) {
+                    this.showNotice('Invalid OTP. Please enter the 6-digit code or demo 123456.', 'error');
+                    return;
+                }
+
+                let user = this.findRegisteredUser(phone);
+                if (!user) {
+                    user = {
+                        ...DEMO_USER,
+                        id: 'farmer_' + phone.slice(-4),
+                        phone: phone,
+                        name: phone === '9876543210' ? 'Ramesh Singh' : `Kisan (${phone.slice(-4)})`
+                    };
+                }
+
+                this.setSession(user);
+                closeAuthModal();
+                this.showToast(`Welcome back, Farmer ${user.name}!`);
+                speakText(`Welcome back, Farmer ${user.name}`);
+            },
+
+            loginWithPassword: function() {
+                const phone = document.getElementById('loginPhone').value.trim();
+                const pass = document.getElementById('loginPasswordInput').value.trim();
+
+                if (!phone || !pass) {
+                    this.showNotice('Please enter both mobile number and password.', 'error');
+                    return;
+                }
+
+                let user = this.findRegisteredUser(phone);
+                if (!user) {
+                    user = {
+                        ...DEMO_USER,
+                        id: 'farmer_' + phone.slice(-4),
+                        phone: phone
+                    };
+                }
+
+                this.setSession(user);
+                closeAuthModal();
+                this.showToast(`Welcome, Farmer ${user.name}!`);
+            },
+
+            quickDemoLogin: function() {
+                this.setSession(DEMO_USER);
+                closeAuthModal();
+                this.showToast("Logged in with Demo Account: Farmer Ramesh Singh");
+                speakText("Logged in as Farmer Ramesh Singh.");
+            },
+
+            sendSignupOtp: function() {
+                const name = document.getElementById('signupName').value.trim();
+                const phone = document.getElementById('signupPhone').value.trim();
+                const village = document.getElementById('signupVillage').value.trim();
+                const district = document.getElementById('signupDistrict').value.trim();
+
+                if (!name || phone.length < 10 || !village || !district) {
+                    this.showNotice('Please fill in your Name, 10-digit Phone, Village, and District.', 'error');
+                    return;
+                }
+
+                this.generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+                document.getElementById('btnSendSignupOtp').classList.add('hidden');
+                document.getElementById('signupOtpVerificationGroup').classList.remove('hidden');
+
+                const badge = document.getElementById('signupOtpHelperBadge');
+                if (badge) badge.innerText = `Demo OTP: ${this.generatedOtp}`;
+
+                this.showNotice(`Verification code sent to +91 ${phone}! Enter ${this.generatedOtp} or 123456 below.`, 'success');
+                speakText("Please enter the verification code sent to your mobile.");
+            },
+
+            verifySignupOtp: function() {
+                const otp = document.getElementById('signupOtpInput').value.trim();
+                if (otp !== this.generatedOtp && otp !== '123456' && otp.length !== 6) {
+                    this.showNotice('Invalid OTP. Please enter 6-digit code or 123456.', 'error');
+                    return;
+                }
+
+                const name = document.getElementById('signupName').value.trim();
+                const phone = document.getElementById('signupPhone').value.trim();
+                const village = document.getElementById('signupVillage').value.trim();
+                const district = document.getElementById('signupDistrict').value.trim();
+                const state = document.getElementById('signupState').value;
+                const crop = document.getElementById('signupCrop').value;
+                const landSize = document.getElementById('signupLandSize').value.trim() || "4.0";
+                const lang = document.getElementById('signupLang').value;
+
+                const newUser = {
+                    id: 'farmer_' + Date.now().toString().slice(-5),
+                    name: name,
+                    phone: phone,
+                    village: village,
+                    district: district,
+                    state: state,
+                    crop: crop,
+                    landSize: landSize,
+                    preferredLang: lang,
+                    plotNumber: '#' + Math.floor(100 + Math.random() * 899),
+                    soilScore: "78/100",
+                    nitrogen: "295 kg/ha",
+                    phosphorus: "16 kg/ha",
+                    potassium: "215 kg/ha",
+                    dosageAdvice: "Apply 40kg Urea + 15kg DAP per Acre with light evening irrigation.",
+                    createdAt: new Date().toISOString().split('T')[0]
+                };
+
+                this.saveRegisteredUser(newUser);
+                this.setSession(newUser);
+
+                if (this.db) {
+                    this.db.collection('farmers').doc(newUser.id).set(newUser).catch(err => {
+                        console.warn("[KrishiAuth] Firestore sync error:", err);
+                    });
+                }
+
+                closeAuthModal();
+
+                if (lang && lang !== currentLang) {
+                    const langSel = document.getElementById('langSelect');
+                    if (langSel) langSel.value = lang;
+                    changeLanguage(lang);
+                }
+
+                this.showToast(`Account Created! Welcome Farmer ${newUser.name}`);
+                speakText(`Namaste Farmer ${newUser.name}. Your Kisan account is now active.`);
+                switchTab('dashboard');
+            },
+
+            saveProfileEdits: function() {
+                if (!this.currentUser) return;
+
+                const name = document.getElementById('editProfileName').value.trim();
+                const village = document.getElementById('editProfileVillage').value.trim();
+                const district = document.getElementById('editProfileDistrict').value.trim();
+                const state = document.getElementById('editProfileState').value;
+                const crop = document.getElementById('editProfileCrop').value;
+                const landSize = document.getElementById('editProfileLandSize').value.trim();
+
+                if (name) this.currentUser.name = name;
+                if (village) this.currentUser.village = village;
+                if (district) this.currentUser.district = district;
+                if (state) this.currentUser.state = state;
+                if (crop) this.currentUser.crop = crop;
+                if (landSize) this.currentUser.landSize = landSize;
+
+                this.setSession(this.currentUser);
+
+                if (this.db) {
+                    this.db.collection('farmers').doc(this.currentUser.id).update({
+                        name, village, district, state, crop, landSize
+                    }).catch(err => console.warn(err));
+                }
+
+                closeEditProfileModal();
+                this.showToast("Farm profile updated successfully!");
+                speakText("Profile updated successfully.");
+            },
+
+            logout: function() {
+                try {
+                    localStorage.removeItem('krishi_user_session');
+                } catch(e) {}
+                this.currentUser = null;
+
+                if (this.firebaseApp && firebase.auth) {
+                    try { firebase.auth().signOut(); } catch(e) {}
+                }
+
+                this.updateUI();
+                this.showToast("Logged out of Kisan account.");
+                speakText("You have been logged out.");
+                switchTab('dashboard');
+            },
+
+            setSession: function(user) {
+                this.currentUser = user;
+                try {
+                    localStorage.setItem('krishi_user_session', JSON.stringify(user));
+                } catch(e) {}
+                this.updateUI();
+            },
+
+            findRegisteredUser: function(phone) {
+                if (phone === '9876543210') return DEMO_USER;
+                try {
+                    const users = JSON.parse(localStorage.getItem('krishi_registered_users') || '[]');
+                    return users.find(u => u.phone === phone);
+                } catch(e) {
+                    return null;
+                }
+            },
+
+            saveRegisteredUser: function(user) {
+                try {
+                    const users = JSON.parse(localStorage.getItem('krishi_registered_users') || '[]');
+                    const filtered = users.filter(u => u.phone !== user.phone);
+                    filtered.push(user);
+                    localStorage.setItem('krishi_registered_users', JSON.stringify(filtered));
+                } catch(e) {}
+            },
+
+            startOtpCountdown: function(elementId) {
+                let seconds = 30;
+                const el = document.getElementById(elementId);
+                if (this.otpTimerInterval) clearInterval(this.otpTimerInterval);
+                this.otpTimerInterval = setInterval(() => {
+                    seconds--;
+                    if (el) el.innerText = seconds > 0 ? `Resend in ${seconds}s` : 'Resend Available';
+                    if (seconds <= 0) clearInterval(this.otpTimerInterval);
+                }, 1000);
+            },
+
+            getInitials: function(name) {
+                if (!name) return "KP";
+                const parts = name.trim().split(/\s+/);
+                if (parts.length >= 2) {
+                    return (parts[0][0] + parts[1][0]).toUpperCase();
+                }
+                return name.slice(0, 2).toUpperCase();
+            },
+
+            showNotice: function(msg, type) {
+                const box = document.getElementById('authNotice');
+                const text = document.getElementById('authNoticeText');
+                if (!box || !text) return;
+                box.classList.remove('hidden', 'bg-rose-100', 'text-rose-900', 'border-rose-300', 'bg-emerald-100', 'text-emerald-900', 'border-emerald-300');
+                if (type === 'error') {
+                    box.classList.add('bg-rose-100', 'text-rose-900', 'border', 'border-rose-300');
+                } else {
+                    box.classList.add('bg-emerald-100', 'text-emerald-900', 'border', 'border-emerald-300');
+                }
+                text.innerText = msg;
+            },
+
+            showToast: function(msg) {
+                const toast = document.createElement('div');
+                toast.className = "fixed bottom-24 right-6 bg-slate-900 text-sunshine-400 px-5 py-3.5 rounded-2xl text-xs font-black z-50 shadow-2xl border border-sunshine-500/50 flex items-center space-x-2";
+                toast.innerHTML = `<i class="fa-solid fa-circle-check text-sunshine-400 text-base"></i> <span>${msg}</span>`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3500);
+            },
+
+            setupRouting: function() {
+                const handleRoute = () => {
+                    const hash = window.location.hash.toLowerCase();
+                    const path = window.location.pathname.toLowerCase();
+
+                    if (hash === '#login' || path.endsWith('/login')) {
+                        openAuthModal('login');
+                    } else if (hash === '#signup' || path.endsWith('/signup')) {
+                        openAuthModal('signup');
+                    } else if (hash === '#profile' || hash === '#account' || path.endsWith('/profile') || path.endsWith('/account')) {
+                        switchTab('profile');
+                    } else if (hash.startsWith('#tab-')) {
+                        switchTab(hash.replace('#tab-', ''));
+                    }
+                };
+
+                window.addEventListener('hashchange', handleRoute);
+                handleRoute();
+            }
+        };
+
+        function hideAuthNotice() {
+            const box = document.getElementById('authNotice');
+            if (box) box.classList.add('hidden');
+        }
+
+        function openAuthModal(mode) {
+            hideAuthNotice();
+            const modal = document.getElementById('authModal');
+            if (modal) modal.classList.remove('hidden');
+            switchAuthMode(mode || 'login');
+        }
+
+        function closeAuthModal() {
+            const modal = document.getElementById('authModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function switchAuthMode(mode) {
+            hideAuthNotice();
+            const loginView = document.getElementById('authLoginView');
+            const signupView = document.getElementById('authSignupView');
+            const tabLogin = document.getElementById('authTabBtnLogin');
+            const tabSignup = document.getElementById('authTabBtnSignup');
+            const title = document.getElementById('authModalTitle');
+
+            if (mode === 'signup') {
+                loginView.classList.add('hidden');
+                signupView.classList.remove('hidden');
+                tabSignup.classList.add('bg-white', 'text-brand-900', 'shadow');
+                tabSignup.classList.remove('text-slate-600');
+                tabLogin.classList.remove('bg-white', 'text-brand-900', 'shadow');
+                tabLogin.classList.add('text-slate-600');
+                if (title) title.innerText = 'New Farmer Registration';
+            } else {
+                signupView.classList.add('hidden');
+                loginView.classList.remove('hidden');
+                tabLogin.classList.add('bg-white', 'text-brand-900', 'shadow');
+                tabLogin.classList.remove('text-slate-600');
+                tabSignup.classList.remove('bg-white', 'text-brand-900', 'shadow');
+                tabSignup.classList.add('text-slate-600');
+                if (title) title.innerText = 'Farmer Login';
+            }
+        }
+
+        function toggleLoginMethod(method) {
+            const otpGroup = document.getElementById('loginOtpGroup');
+            const passGroup = document.getElementById('loginPasswordGroup');
+            const otpBtn = document.getElementById('loginMethodOtpBtn');
+            const passBtn = document.getElementById('loginMethodPassBtn');
+
+            if (method === 'pass') {
+                otpGroup.classList.add('hidden');
+                passGroup.classList.remove('hidden');
+                passBtn.className = "px-3 py-1.5 rounded-xl font-black bg-brand-600 text-white shadow-sm text-xs transition";
+                otpBtn.className = "px-3 py-1.5 rounded-xl font-bold bg-transparent text-slate-700 hover:bg-white text-xs transition";
+            } else {
+                passGroup.classList.add('hidden');
+                otpGroup.classList.remove('hidden');
+                otpBtn.className = "px-3 py-1.5 rounded-xl font-black bg-brand-600 text-white shadow-sm text-xs transition";
+                passBtn.className = "px-3 py-1.5 rounded-xl font-bold bg-transparent text-slate-700 hover:bg-white text-xs transition";
+            }
+        }
+
+        function openEditProfileModal() {
+            if (!KrishiAuth.currentUser) {
+                openAuthModal('login');
+                return;
+            }
+            const u = KrishiAuth.currentUser;
+            document.getElementById('editProfileName').value = u.name || '';
+            document.getElementById('editProfileVillage').value = u.village || '';
+            document.getElementById('editProfileDistrict').value = u.district || '';
+            document.getElementById('editProfileState').value = u.state || 'Punjab';
+            document.getElementById('editProfileCrop').value = u.crop || 'Wheat (Kalyan Sona)';
+            document.getElementById('editProfileLandSize').value = u.landSize || '4.5';
+            document.getElementById('editProfileModal').classList.remove('hidden');
+        }
+
+        function closeEditProfileModal() {
+            document.getElementById('editProfileModal').classList.add('hidden');
+        }
+
+        function handleContextBarClick() {
+            if (KrishiAuth.currentUser) {
+                switchTab('profile');
+            } else {
+                openAuthModal('login');
+            }
+        }
+
         window.onload = function() {
             calculateLogistics();
+            KrishiAuth.init();
         };
     </script>
 </body>
