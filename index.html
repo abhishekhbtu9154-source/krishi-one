@@ -51,29 +51,264 @@
         }
     </script>
     <style>
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        /* ============================================================
+           TELESCOPE.FYI DESIGN SYSTEM — KrishiOne Animation Layer
+           Easing curves, scroll reveals, tab transitions, card hover
+        ============================================================ */
+
+        /* --- Custom Easing Variables (Telescope-inspired) --- */
+        :root {
+            --ease-out-power1: cubic-bezier(.25, .46, .45, .94);
+            --ease-out-power2: cubic-bezier(.215, .61, .355, 1);
+            --ease-out-power3: cubic-bezier(.165, .84, .44, 1);
+            --ease-out-power4: cubic-bezier(.23, 1, .32, 1);
+            --ease-in-power1:  cubic-bezier(.55, .085, .68, .53);
+            --ease-in-out-power1: cubic-bezier(.455, .03, .515, .955);
+            --ease-in-out-power2: cubic-bezier(.645, .045, .355, 1);
+            --ease-in-out-power3: cubic-bezier(.77, 0, .175, 1);
+            --ease-out-swift:  cubic-bezier(.55, 0, .1, 1);
+            --ease-smooth-out: cubic-bezier(.4, 0, 0, 1);
+            --ease-bounce:     cubic-bezier(.47, 1.64, .41, .8);
+            --ease-out-expo:   cubic-bezier(.19, 1, .22, 1);
+            --ease-out-back:   cubic-bezier(.175, .885, .32, 1.275);
+            --ease-out-circ:   cubic-bezier(.075, .82, .165, 1);
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
+
+        /* --- Font Smoothing & Base --- */
+        html {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            letter-spacing: -0.01em;
+            scroll-behavior: smooth;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #16a34a;
-            border-radius: 4px;
+
+        /* --- Keyframe Animations --- */
+        @keyframes fromBottom {
+            0%  { opacity: 0; transform: translate3d(0, 40px, 0); }
+            to  { opacity: 1; transform: translateZ(0); }
         }
-        .touch-target {
-            min-height: 48px;
+        @keyframes fromFade {
+            0%  { opacity: 0; }
+            to  { opacity: 1; }
         }
-        .speaker-btn:hover {
-            transform: scale(1.08);
+        @keyframes slideUpDown {
+            0%  { transform: translateZ(0); }
+            50% { transform: translate3d(0, -55%, 0); }
+            to  { transform: translateZ(0); }
         }
-        .pulse-slow {
-            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        @keyframes tabFadeIn {
+            0%  { opacity: 0; transform: scale(0.985) translateY(14px); }
+            to  { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes headerSlideDown {
+            0%  { transform: translate3d(0, -100%, 0); }
+            to  { transform: translateZ(0); }
+        }
+        @keyframes contextBarSlide {
+            0%  { opacity: 0; transform: translate3d(0, -16px, 0); }
+            to  { opacity: 1; transform: translateZ(0); }
         }
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.75; }
+            50%       { opacity: 0.75; }
+        }
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.8; transform: scale(1.06); }
+        }
+        @keyframes shimmer {
+            0%   { background-position: -200% 0; }
+            100% { background-position:  200% 0; }
+        }
+        @keyframes modalSlideUp {
+            0%  { opacity: 0; transform: scale(0.96) translateY(24px); }
+            to  { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes toastIn {
+            0%  { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.95); }
+            to  { opacity: 1; transform: translateZ(0) scale(1); }
+        }
+        @keyframes bgEntering {
+            0%  { transform: scale(1.12) translateZ(0); }
+            to  { transform: scale(1.04) translateZ(0); }
+        }
+
+        /* --- Scroll Reveal System --- */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translate3d(0, 32px, 0);
+            transition: opacity 0.7s var(--ease-out-power2),
+                        transform 0.7s var(--ease-out-power2);
+        }
+        .scroll-reveal.is-visible {
+            opacity: 1;
+            transform: translateZ(0);
+        }
+
+        /* --- Stagger Children Reveal --- */
+        .stagger-reveal > * {
+            opacity: 0;
+            transform: translate3d(0, 22px, 0);
+            transition: opacity 0.55s var(--ease-out-power2),
+                        transform 0.55s var(--ease-out-power2);
+        }
+        .stagger-reveal.is-visible > *:nth-child(1) { opacity:1; transform:none; transition-delay:0s; }
+        .stagger-reveal.is-visible > *:nth-child(2) { opacity:1; transform:none; transition-delay:.07s; }
+        .stagger-reveal.is-visible > *:nth-child(3) { opacity:1; transform:none; transition-delay:.14s; }
+        .stagger-reveal.is-visible > *:nth-child(4) { opacity:1; transform:none; transition-delay:.21s; }
+        .stagger-reveal.is-visible > *:nth-child(5) { opacity:1; transform:none; transition-delay:.28s; }
+        .stagger-reveal.is-visible > *:nth-child(6) { opacity:1; transform:none; transition-delay:.35s; }
+        .stagger-reveal.is-visible > *:nth-child(7) { opacity:1; transform:none; transition-delay:.42s; }
+        .stagger-reveal.is-visible > *:nth-child(8) { opacity:1; transform:none; transition-delay:.49s; }
+
+        /* --- Tab Content Transition --- */
+        .tab-content.tab-entering {
+            animation: tabFadeIn 0.48s var(--ease-out-power2) forwards;
+        }
+
+        /* --- Header Entrance --- */
+        header {
+            animation: headerSlideDown 0.55s var(--ease-out-power2) forwards;
+        }
+
+        /* --- Context Bar Entrance --- */
+        #farmerContextBar {
+            animation: contextBarSlide 0.5s var(--ease-out-power2) 0.25s both;
+        }
+
+        /* --- Scrollbar Styling --- */
+        .custom-scrollbar::-webkit-scrollbar { width:6px; height:6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background:#f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background:#16a34a; border-radius:4px; }
+
+        /* --- Touch & Accessibility --- */
+        .touch-target { min-height: 48px; }
+        button { -webkit-tap-highlight-color: transparent; }
+
+        /* --- Nav Button Transitions --- */
+        .nav-btn {
+            position: relative;
+            transition: background-color 0.3s var(--ease-out-swift),
+                        color 0.3s var(--ease-out-swift),
+                        transform 0.18s var(--ease-out-back),
+                        box-shadow 0.3s var(--ease-out-swift);
+            will-change: transform;
+        }
+        .nav-btn:active { transform: scale(0.94); }
+
+        /* --- Nav Icon Hover Animation (Telescope slideUpDown) --- */
+        .nav-btn:hover i {
+            animation: slideUpDown 0.4s var(--ease-in-out-power1);
+        }
+
+        /* --- Floating Card Effect --- */
+        .float-card {
+            transition: transform 0.4s var(--ease-out-power2),
+                        box-shadow 0.4s var(--ease-out-power2);
+            will-change: transform;
+        }
+        .float-card:hover {
+            transform: translateY(-4px) translateZ(0);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.1);
+        }
+
+        /* --- Quick Action Cards (Dashboard Grid) --- */
+        .quick-action-card {
+            transition: transform 0.35s var(--ease-out-back),
+                        box-shadow 0.35s var(--ease-out-power2),
+                        background-color 0.25s var(--ease-out-swift);
+            will-change: transform;
+        }
+        .quick-action-card:hover {
+            transform: translateY(-3px) scale(1.01) translateZ(0);
+            box-shadow: 0 10px 36px rgba(0,0,0,0.11);
+        }
+        .quick-action-card:active {
+            transform: scale(0.97) translateZ(0);
+            transition-duration: 0.12s;
+        }
+        /* Icon inside card */
+        .quick-action-card:hover .card-icon {
+            animation: slideUpDown 0.42s var(--ease-in-out-power1);
+        }
+
+        /* --- Button Press --- */
+        button:active:not([disabled]):not(.nav-btn) {
+            transform: scale(0.96);
+            transition: transform 0.1s var(--ease-out-power1);
+        }
+
+        /* --- Speaker / Voice Btn --- */
+        .speaker-btn:hover { transform: scale(1.08); }
+        .speaker-btn { transition: transform 0.25s var(--ease-out-back); }
+
+        /* --- Live Badge Pulse --- */
+        .pulse-slow { animation: pulse 3s var(--ease-in-out-power1) infinite; }
+        .live-pulse  { animation: livePulse 2s var(--ease-in-out-power1) infinite; }
+
+        /* --- Shimmer Skeleton --- */
+        .shimmer {
+            background: linear-gradient(90deg,#f0f4f0 25%,#e4ede4 50%,#f0f4f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.6s var(--ease-in-out-power1) infinite;
+        }
+
+        /* --- Modal Animation --- */
+        .modal-animate-in {
+            animation: modalSlideUp 0.42s var(--ease-out-swift) forwards;
+        }
+        .modal-backdrop-animate {
+            animation: fromFade 0.35s var(--ease-out-power1) forwards;
+        }
+
+        /* --- Toast Notification --- */
+        .toast-animate {
+            animation: toastIn 0.38s var(--ease-out-back) forwards;
+        }
+
+        /* --- Text Selection (Telescope-style) --- */
+        ::selection {
+            background-color: #22c55e;
+            color: #fff;
+        }
+
+        /* --- Horizontal Rule Reveal --- */
+        .line-reveal {
+            transform-origin: left center;
+            transform: scaleX(0);
+            transition: transform 0.7s var(--ease-out-expo);
+        }
+        .line-reveal.is-visible { transform: scaleX(1); }
+
+        /* --- Section Title Slide-up --- */
+        .title-reveal {
+            overflow: hidden;
+        }
+        .title-reveal span {
+            display: inline-block;
+            transform: translate3d(0, 105%, 0);
+            opacity: 0;
+            transition: transform 0.65s var(--ease-out-power3),
+                        opacity 0.45s var(--ease-out-power1);
+        }
+        .title-reveal.is-visible span {
+            transform: translateZ(0);
+            opacity: 1;
+        }
+
+        /* --- Weather / Mandi / Scheme Cards parallel scroll feel --- */
+        .parallax-card {
+            transition: transform 0.5s var(--ease-out-expo);
+        }
+
+        /* --- Reduced Motion Override --- */
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
         }
     </style>
 </head>
